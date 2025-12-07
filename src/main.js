@@ -10,6 +10,9 @@ const game = {
     numbers: 8,
     repeatedTime: 4,
     prepareTime: 3,
+    gridX: 6,
+    gridY: 6,
+    started: false,
     init: function () {
 
         for (let i = 0; i < this.repeatedTime; i++) {
@@ -20,11 +23,18 @@ const game = {
 
         this.answers = this.answers.sort(() => Math.random() - 0.5)
 
-        document.querySelectorAll('.item').forEach((d, i) => {
-            
-            d.setAttribute('data-answer', this.answers[i])
-            d.innerText = this.answers[i]
-        })
+        const items = document.querySelectorAll('.item')
+
+        while(this.answers.length > 0) {
+            const index = Math.floor(Math.random() * items.length)
+            if (this.tempIndex.indexOf(index) == -1) {
+                const dom = items[index]
+                const answer = this.answers.pop()
+                dom.setAttribute('data-answer', answer)
+                dom.innerText = answer
+                this.tempIndex.push(index)
+            }
+        }
 
         setTimeout(() => {
             document.querySelectorAll('.item').forEach((dom) => {
@@ -37,6 +47,7 @@ const game = {
     },
     clickDom: function (dom) {
         const value = dom.getAttribute('data-answer')
+        if(value === null) return
         if (this.temp.indexOf(dom) != -1) return
         dom.innerText = value
         this.temp.push(dom)
@@ -72,10 +83,11 @@ const game = {
     }
 }
 
-function initDom(numbers, repeatedTime) {
+function initDom(gridX, gridY) {
     game.dom.innerHTML = ''
+    game.dom.style['width'] = `${gridX * 50}px`
 
-    for (let i = 0; i < (numbers + 1) * repeatedTime; i++) {
+    for (let i = 0; i < gridX * gridY; i++) {
 
         const childDiv = document.createElement('div')
         childDiv.classList = 'item'
@@ -83,14 +95,22 @@ function initDom(numbers, repeatedTime) {
     }
 }
 
-document.querySelector('.numbers').addEventListener('change', (e) => {
-    game.numbers = parseInt(e.target.value)
-    initDom(game.numbers, game.repeatedTime)
-})
-
 document.querySelector('.repeatTime').addEventListener('change', (e) => {
     game.repeatedTime = parseInt(e.target.value)
-    initDom(game.numbers, game.repeatedTime)
+})
+
+document.querySelector('.numbers').addEventListener('change', (e) => {
+    game.numbers = parseInt(e.target.value)
+})
+
+document.querySelector('.gridY').addEventListener('change', (e) => {
+    game.gridY = parseInt(e.target.value)
+    initDom(game.gridX, game.gridY)
+})
+
+document.querySelector('.gridX').addEventListener('change', (e) => {
+    game.gridX = parseInt(e.target.value)
+    initDom(game.gridX, game.gridY)
 })
 
 document.querySelector('.prepareTime').addEventListener('change', (e) => {
@@ -98,7 +118,10 @@ document.querySelector('.prepareTime').addEventListener('change', (e) => {
 })
 
 document.querySelector('.start').addEventListener('click', () => {
-    game.init()
+    if(!game.started) {
+        game.started = true
+        game.init()
+    }
 })
 
-initDom(game.numbers, game.repeatedTime)
+initDom(game.gridX, game.gridY)
